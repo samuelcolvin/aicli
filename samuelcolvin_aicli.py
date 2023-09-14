@@ -7,6 +7,7 @@ from pathlib import Path
 import openai
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
+from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
@@ -40,7 +41,7 @@ The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tznam
 
     while True:
         try:
-            text = session.prompt('aicli ➤ ')
+            text = session.prompt('aicli ➤ ', auto_suggest=AutoSuggestFromHistory())
         except (KeyboardInterrupt, EOFError):
             return 0
 
