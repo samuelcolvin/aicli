@@ -8,10 +8,11 @@ import openai
 from prompt_toolkit import PromptSession
 from prompt_toolkit.history import FileHistory
 from rich.console import Console
+from rich.live import Live
 from rich.markdown import Markdown
 from rich.status import Status
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
 
 def cli() -> int:
@@ -33,9 +34,13 @@ The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tznam
 
     history = Path().home() / '.openai-prompt-history.txt'
     session = PromptSession(history=FileHistory(str(history)))
+
+    # allows you to disable streaming responses if they get annoying or are more expensive.
+    stream = True
+
     while True:
         try:
-            text = session.prompt('➤ ')
+            text = session.prompt('aicli ➤ ')
         except (KeyboardInterrupt, EOFError):
             return 0
 
@@ -47,16 +52,28 @@ The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tznam
         messages.append({'role': 'user', 'content': text})
 
         try:
-            response = openai.ChatCompletion.create(model='gpt-4', messages=messages)
+            response = openai.ChatCompletion.create(model='gpt-4', messages=messages, stream=stream)
         except KeyboardInterrupt:
             status.stop()
             return 0
 
-        content = response['choices'][0]['message']['content']
-        messages.append({'role': 'assistant', 'content': content})
         status.stop()
-        md = Markdown(content)
-        console.print(md)
+        if stream:
+            content = ''
+            markdown = Markdown(content)
+            with Live(markdown, refresh_per_second=15, console=console) as live:
+                for chunk in response:
+                    if chunk['choices'][0]['finish_reason'] is not None:
+                        break
+                    chunk_text = chunk['choices'][0]['delta'].get('content', '')
+                    content += chunk_text
+                    live.update(Markdown(content))
+        else:
+            content = response['choices'][0]['message']['content']
+            md = Markdown(content)
+            console.print(md)
+
+        messages.append({'role': 'assistant', 'content': content})
 
 
 if __name__ == '__main__':
