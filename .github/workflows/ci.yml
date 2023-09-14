@@ -62,7 +62,7 @@ jobs:
         id: check-version
         uses: samuelcolvin/check-python-version@v4.1
         with:
-          version_file_path: 'dsamuelcolvin_aicli.py'
+          version_file_path: 'samuelcolvin_aicli.py'
 
       - name: build
         run: python -m build
