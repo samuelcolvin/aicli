@@ -61,13 +61,16 @@ The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tznam
         if stream:
             content = ''
             markdown = Markdown(content)
-            with Live(markdown, refresh_per_second=15, console=console) as live:
-                for chunk in response:
-                    if chunk['choices'][0]['finish_reason'] is not None:
-                        break
-                    chunk_text = chunk['choices'][0]['delta'].get('content', '')
-                    content += chunk_text
-                    live.update(Markdown(content))
+            try:
+                with Live(markdown, refresh_per_second=15, console=console) as live:
+                    for chunk in response:
+                        if chunk['choices'][0]['finish_reason'] is not None:
+                            break
+                        chunk_text = chunk['choices'][0]['delta'].get('content', '')
+                        content += chunk_text
+                        live.update(Markdown(content))
+            except KeyboardInterrupt:
+                console.print('[dim]Interrupted[/dim]')
         else:
             content = response['choices'][0]['message']['content']
             md = Markdown(content)
