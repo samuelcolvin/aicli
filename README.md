@@ -13,7 +13,7 @@ pip install samuelcolvin-aicli
 ## Usage
 
 ```bash
-alcli
+aicli
 ```
 
 ## Example
