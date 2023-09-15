@@ -5,6 +5,9 @@ build-backend = "hatchling.build"
 [tool.hatch.version]
 path = "samuelcolvin_aicli.py"
 
+[tool.hatch.build.targets.sdist]
+exclude = ["/.github", "/example.mov"]
+
 [project]
 name = "samuelcolvin-aicli"
 description = "OpenAI powered AI CLI in just a few lines of code."

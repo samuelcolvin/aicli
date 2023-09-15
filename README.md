@@ -12,10 +12,19 @@ pip install samuelcolvin-aicli
 
 ## Usage
 
+You'll need to set the `OPENAI_API_KEY` environment variable to use `aicli` which you can generate from
+[platform.openai.com](https://platform.openai.com/), you'll have to add some credit to use the API.
+
+```bash
+export OPENAI_API_KEY='...'
+```
+
+Then usage is as simple as:
+
 ```bash
 aicli
 ```
 
 ## Example
 
-![Example](./example.jpg)
+https://github.com/samuelcolvin/aicli/assets/4039449/15cc8127-c5fc-4cff-a9d7-3560f3b96d60
