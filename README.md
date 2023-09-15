@@ -27,4 +27,4 @@ aicli
 
 ## Example
 
-![Example](./example.webm)
+![Example](./example.mov)
