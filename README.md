@@ -27,4 +27,4 @@ aicli
 
 ## Example
 
-![Example](./example.mov)
+https://github.com/samuelcolvin/aicli/assets/4039449/15cc8127-c5fc-4cff-a9d7-3560f3b96d60
