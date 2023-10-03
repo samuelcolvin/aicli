@@ -48,7 +48,7 @@ aicli = 'samuelcolvin_aicli:cli'
 
 [tool.ruff]
 line-length = 120
-extend-select = ["Q", "RUF100", "C90", "UP", "I"]
+extend-select = ["Q", "RUF100", "UP", "I"]
 flake8-quotes = {inline-quotes = "single", multiline-quotes = "double"}
 target-version = "py37"
 

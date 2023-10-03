@@ -12,8 +12,9 @@ from rich.console import Console
 from rich.live import Live
 from rich.markdown import Markdown
 from rich.status import Status
+from rich.syntax import Syntax
 
-__version__ = '0.3.0'
+__version__ = '0.4.0'
 
 
 def cli() -> int:
@@ -27,10 +28,10 @@ def cli() -> int:
         return 1
 
     now_utc = datetime.now(timezone.utc)
-    setup = f"""
+    setup = f"""\
 Help the user by responding to their request, the output should be concise and always written in markdown.
-The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tzname(now_utc)}.
-"""
+The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tzname(now_utc)}."""
+
     messages = [{'role': 'system', 'content': setup}]
 
     history = Path().home() / '.openai-prompt-history.txt'
@@ -45,7 +46,13 @@ The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tznam
         except (KeyboardInterrupt, EOFError):
             return 0
 
-        if not text:
+        if not text.strip():
+            continue
+
+        if text.lower().replace(' ', '-') == 'show-markdown':
+            last_content = messages[-1]['content']
+            console.print('[dim]Last markdown output of last question:[/dim]\n')
+            console.print(Syntax(last_content, lexer='markdown', background_color='default'))
             continue
 
         status = Status('[dim]Working on it…[/dim]', console=console)
@@ -61,9 +68,8 @@ The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tznam
         status.stop()
         if stream:
             content = ''
-            markdown = Markdown(content)
             try:
-                with Live(markdown, refresh_per_second=15, console=console) as live:
+                with Live('', refresh_per_second=15, console=console) as live:
                     for chunk in response:
                         if chunk['choices'][0]['finish_reason'] is not None:
                             break
