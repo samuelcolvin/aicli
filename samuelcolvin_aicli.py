@@ -14,11 +14,11 @@ from rich.markdown import Markdown
 from rich.status import Status
 from rich.syntax import Syntax
 
-__version__ = '0.4.0'
+__version__ = '0.4.1'
 
 
 def cli() -> int:
-    console = Console(width=120)
+    console = Console()
     console.print(f'aicli - OpenAI powered AI CLI v{__version__}', style='green bold', highlight=False)
 
     try:
