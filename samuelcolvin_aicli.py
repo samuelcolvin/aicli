@@ -8,13 +8,25 @@ import openai
 from prompt_toolkit import PromptSession
 from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import FileHistory
-from rich.console import Console
+from rich.console import Console, ConsoleOptions, RenderResult
 from rich.live import Live
-from rich.markdown import Markdown
+from rich.markdown import Markdown, CodeBlock
+from rich.text import Text
 from rich.status import Status
 from rich.syntax import Syntax
 
-__version__ = '0.4.1'
+__version__ = '0.5.0'
+
+
+class SimpleCodeBlock(CodeBlock):
+    def __rich_console__(self, console: Console, options: ConsoleOptions) -> RenderResult:
+        code = str(self.text).rstrip()
+        yield Text(self.lexer_name, style='dim')
+        yield Syntax(code, self.lexer_name, theme=self.theme, background_color='default', word_wrap=True)
+        yield Text(f'/{self.lexer_name}', style='dim')
+
+
+Markdown.elements['fence'] = SimpleCodeBlock
 
 
 def cli() -> int:
