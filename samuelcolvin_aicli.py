@@ -56,7 +56,7 @@ def cli() -> int:
     setup = f"""\
 Help the user by responding to their request, the output should be concise and always written in markdown.
 The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tzname(now_utc)}.
-The use is running {sys.platform}."""
+The user is running {sys.platform}."""
 
     stream = not args.no_stream
     messages = [{'role': 'system', 'content': setup}]
@@ -93,30 +93,33 @@ The use is running {sys.platform}."""
             content = ask_openai(messages, stream, console)
         except KeyboardInterrupt:
             return 0
-        else:
-            messages.append({'role': 'assistant', 'content': content})
+        messages.append({'role': 'assistant', 'content': content})
 
 
 def ask_openai(messages: list[dict[str, str]], stream: bool, console: Console) -> str:
     with Status('[dim]Working on it…[/dim]', console=console):
         response = openai.ChatCompletion.create(model='gpt-4', messages=messages, stream=stream)
 
+    console.print('\nResponse:', style='green')
     if stream:
         content = ''
-        try:
-            with Live('', refresh_per_second=15, console=console) as live:
+        interrupted = False
+        with Live('', refresh_per_second=15, console=console) as live:
+            try:
                 for chunk in response:
                     if chunk['choices'][0]['finish_reason'] is not None:
                         break
                     chunk_text = chunk['choices'][0]['delta'].get('content', '')
                     content += chunk_text
                     live.update(Markdown(content))
-        except KeyboardInterrupt:
+            except KeyboardInterrupt:
+                interrupted = True
+
+        if interrupted:
             console.print('[dim]Interrupted[/dim]')
     else:
         content = response['choices'][0]['message']['content']
-        md = Markdown(content)
-        console.print(md)
+        console.print(Markdown(content))
 
     return content
 
