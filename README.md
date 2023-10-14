@@ -27,4 +27,4 @@ aicli
 
 ## Example
 
-https://github.com/samuelcolvin/aicli/assets/4039449/15cc8127-c5fc-4cff-a9d7-3560f3b96d60
+https://github.com/samuelcolvin/aicli/assets/4039449/53a30d7f-79ae-452e-ac81-e94c8cd4032b
