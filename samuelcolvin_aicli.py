@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import os
 import sys
 from datetime import datetime, timezone
@@ -30,8 +31,20 @@ Markdown.elements['fence'] = SimpleCodeBlock
 
 
 def cli() -> int:
+    parser = argparse.ArgumentParser(prog='aicli', description=f'OpenAI powered AI CLI v{__version__}')
+    parser.add_argument('prompt', nargs='?', help='AI Prompt, if omitted fall into interactive mode')
+
+    # allows you to disable streaming responses if they get annoying or are more expensive.
+    parser.add_argument('--no-stream', action='store_true', help='Whether to stream responses from OpenAI')
+
+    parser.add_argument('--version', action='store_true', help='Show version and exit')
+
+    args = parser.parse_args()
+
     console = Console()
     console.print(f'aicli - OpenAI powered AI CLI v{__version__}', style='green bold', highlight=False)
+    if args.version:
+        return 0
 
     try:
         openai.api_key = os.environ['OPENAI_API_KEY']
@@ -42,15 +55,22 @@ def cli() -> int:
     now_utc = datetime.now(timezone.utc)
     setup = f"""\
 Help the user by responding to their request, the output should be concise and always written in markdown.
-The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tzname(now_utc)}."""
+The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tzname(now_utc)}.
+The use is running {sys.platform}."""
 
+    stream = not args.no_stream
     messages = [{'role': 'system', 'content': setup}]
+
+    if args.prompt:
+        messages.append({'role': 'user', 'content': args.prompt})
+        try:
+            ask_openai(messages, stream, console)
+        except KeyboardInterrupt:
+            pass
+        return 0
 
     history = Path().home() / '.openai-prompt-history.txt'
     session = PromptSession(history=FileHistory(str(history)))
-
-    # allows you to disable streaming responses if they get annoying or are more expensive.
-    stream = True
 
     while True:
         try:
@@ -67,35 +87,38 @@ The current date and time is {datetime.now()} {now_utc.astimezone().tzinfo.tznam
             console.print(Syntax(last_content, lexer='markdown', background_color='default'))
             continue
 
-        status = Status('[dim]Working on it…[/dim]', console=console)
-        status.start()
         messages.append({'role': 'user', 'content': text})
 
         try:
-            response = openai.ChatCompletion.create(model='gpt-4', messages=messages, stream=stream)
+            content = ask_openai(messages, stream, console)
         except KeyboardInterrupt:
-            status.stop()
             return 0
-
-        status.stop()
-        if stream:
-            content = ''
-            try:
-                with Live('', refresh_per_second=15, console=console) as live:
-                    for chunk in response:
-                        if chunk['choices'][0]['finish_reason'] is not None:
-                            break
-                        chunk_text = chunk['choices'][0]['delta'].get('content', '')
-                        content += chunk_text
-                        live.update(Markdown(content))
-            except KeyboardInterrupt:
-                console.print('[dim]Interrupted[/dim]')
         else:
-            content = response['choices'][0]['message']['content']
-            md = Markdown(content)
-            console.print(md)
+            messages.append({'role': 'assistant', 'content': content})
 
-        messages.append({'role': 'assistant', 'content': content})
+
+def ask_openai(messages: list[dict[str, str]], stream: bool, console: Console) -> str:
+    with Status('[dim]Working on it…[/dim]', console=console):
+        response = openai.ChatCompletion.create(model='gpt-4', messages=messages, stream=stream)
+
+    if stream:
+        content = ''
+        try:
+            with Live('', refresh_per_second=15, console=console) as live:
+                for chunk in response:
+                    if chunk['choices'][0]['finish_reason'] is not None:
+                        break
+                    chunk_text = chunk['choices'][0]['delta'].get('content', '')
+                    content += chunk_text
+                    live.update(Markdown(content))
+        except KeyboardInterrupt:
+            console.print('[dim]Interrupted[/dim]')
+    else:
+        content = response['choices'][0]['message']['content']
+        md = Markdown(content)
+        console.print(md)
+
+    return content
 
 
 if __name__ == '__main__':
