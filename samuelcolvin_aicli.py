@@ -10,10 +10,10 @@ from prompt_toolkit.auto_suggest import AutoSuggestFromHistory
 from prompt_toolkit.history import FileHistory
 from rich.console import Console, ConsoleOptions, RenderResult
 from rich.live import Live
-from rich.markdown import Markdown, CodeBlock
-from rich.text import Text
+from rich.markdown import CodeBlock, Markdown
 from rich.status import Status
 from rich.syntax import Syntax
+from rich.text import Text
 
 __version__ = '0.5.0'
 
