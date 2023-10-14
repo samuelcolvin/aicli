@@ -9,7 +9,7 @@ install:
 .PHONY: format
 format:
 	black $(sources)
-	ruff --fix $(sources)
+	ruff --fix-only $(sources)
 
 .PHONY: lint
 lint:
