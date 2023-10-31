@@ -16,7 +16,7 @@ from rich.status import Status
 from rich.syntax import Syntax
 from rich.text import Text
 
-__version__ = '0.5.0'
+__version__ = '0.6.0'
 
 
 class SimpleCodeBlock(CodeBlock):
@@ -31,7 +31,16 @@ Markdown.elements['fence'] = SimpleCodeBlock
 
 
 def cli() -> int:
-    parser = argparse.ArgumentParser(prog='aicli', description=f'OpenAI powered AI CLI v{__version__}')
+    parser = argparse.ArgumentParser(
+        prog='aicli',
+        description=f"""\
+OpenAI powered AI CLI v{__version__}
+
+Special prompts:
+* `show-markdown` - show the markdown output from the previous response
+* `multiline` - toggle multiline mode
+""",
+    )
     parser.add_argument('prompt', nargs='?', help='AI Prompt, if omitted fall into interactive mode')
 
     # allows you to disable streaming responses if they get annoying or are more expensive.
@@ -71,20 +80,32 @@ The user is running {sys.platform}."""
 
     history = Path().home() / '.openai-prompt-history.txt'
     session = PromptSession(history=FileHistory(str(history)))
+    multiline = False
 
     while True:
         try:
-            text = session.prompt('aicli ➤ ', auto_suggest=AutoSuggestFromHistory())
+            text = session.prompt('aicli ➤ ', auto_suggest=AutoSuggestFromHistory(), multiline=multiline)
         except (KeyboardInterrupt, EOFError):
             return 0
 
         if not text.strip():
             continue
 
-        if text.lower().replace(' ', '-') == 'show-markdown':
+        ident_prompt = text.lower().strip(' ').replace(' ', '-')
+        if ident_prompt == 'show-markdown':
             last_content = messages[-1]['content']
             console.print('[dim]Last markdown output of last question:[/dim]\n')
             console.print(Syntax(last_content, lexer='markdown', background_color='default'))
+            continue
+        elif ident_prompt == 'multiline':
+            multiline = not multiline
+            if multiline:
+                console.print(
+                    'Enabling multiline mode. '
+                    '[dim]Press [Meta+Enter] or [Esc] followed by [Enter] to accept input.[/dim]'
+                )
+            else:
+                console.print('Disabling multiline mode.')
             continue
 
         messages.append({'role': 'user', 'content': text})
