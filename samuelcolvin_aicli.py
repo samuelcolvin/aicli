@@ -56,10 +56,12 @@ Special prompts:
         return 0
 
     try:
-        openai.api_key = os.environ['OPENAI_API_KEY']
+        openai_api_key = os.environ['OPENAI_API_KEY']
     except KeyError:
         console.print('You must set the OPENAI_API_KEY environment variable', style='red')
         return 1
+
+    client = openai.OpenAI(api_key=openai_api_key)
 
     now_utc = datetime.now(timezone.utc)
     setup = f"""\
@@ -73,7 +75,7 @@ The user is running {sys.platform}."""
     if args.prompt:
         messages.append({'role': 'user', 'content': args.prompt})
         try:
-            ask_openai(messages, stream, console)
+            ask_openai(client, messages, stream, console)
         except KeyboardInterrupt:
             pass
         return 0
@@ -111,15 +113,15 @@ The user is running {sys.platform}."""
         messages.append({'role': 'user', 'content': text})
 
         try:
-            content = ask_openai(messages, stream, console)
+            content = ask_openai(client, messages, stream, console)
         except KeyboardInterrupt:
             return 0
         messages.append({'role': 'assistant', 'content': content})
 
 
-def ask_openai(messages: list[dict[str, str]], stream: bool, console: Console) -> str:
+def ask_openai(client: openai.OpenAI, messages: list[dict[str, str]], stream: bool, console: Console) -> str:
     with Status('[dim]Working on it…[/dim]', console=console):
-        response = openai.ChatCompletion.create(model='gpt-4', messages=messages, stream=stream)
+        response = client.chat.completions.create(model='gpt-4', messages=messages, stream=stream)
 
     console.print('\nResponse:', style='green')
     if stream:
@@ -128,9 +130,9 @@ def ask_openai(messages: list[dict[str, str]], stream: bool, console: Console) -
         with Live('', refresh_per_second=15, console=console) as live:
             try:
                 for chunk in response:
-                    if chunk['choices'][0]['finish_reason'] is not None:
+                    if chunk.choices[0].finish_reason is not None:
                         break
-                    chunk_text = chunk['choices'][0]['delta'].get('content', '')
+                    chunk_text = chunk.choices[0].delta.content
                     content += chunk_text
                     live.update(Markdown(content))
             except KeyboardInterrupt:
@@ -139,7 +141,7 @@ def ask_openai(messages: list[dict[str, str]], stream: bool, console: Console) -
         if interrupted:
             console.print('[dim]Interrupted[/dim]')
     else:
-        content = response['choices'][0]['message']['content']
+        content = response.choices[0].message.content
         console.print(Markdown(content))
 
     return content

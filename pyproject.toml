@@ -32,7 +32,7 @@ classifiers = [
 ]
 requires-python = ">=3.7"
 dependencies = [
-    "openai>=0.28",
+    "openai>=1,<2",
     "rich>=13",
     "prompt-toolkit>=3",
 ]
