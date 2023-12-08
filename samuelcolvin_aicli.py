@@ -16,7 +16,7 @@ from rich.status import Status
 from rich.syntax import Syntax
 from rich.text import Text
 
-__version__ = '0.6.0'
+__version__ = '0.7.0'
 
 
 class SimpleCodeBlock(CodeBlock):

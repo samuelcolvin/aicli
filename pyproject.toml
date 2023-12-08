@@ -20,12 +20,13 @@ classifiers = [
     "Topic :: Communications :: Chat",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
-    'Programming Language :: Python :: 3 :: Only',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
     "Intended Audience :: Developers",
     "Intended Audience :: Information Technology",
     "Environment :: Console",
@@ -44,7 +45,7 @@ Funding = "https://github.com/sponsors/samuelcolvin"
 Source = "https://github.com/samuelcolvin/aicli"
 
 [project.scripts]
-aicli = 'samuelcolvin_aicli:cli'
+aicli = "samuelcolvin_aicli:cli"
 
 [tool.ruff]
 line-length = 120
